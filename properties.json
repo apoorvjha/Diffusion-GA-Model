@@ -1,0 +1,24 @@
+{
+    "strategy" : "linear",
+    "n_steps" : 5,
+    "noise_type" : "gaussian",
+    "gaussian_noise_mean" : 0,
+    "gaussian_noise_variance" : 0.1,
+    "salt_pepper_noise_density" : 0.05,
+    "salt_pepper_noise_salt_probability" : 0.5,
+    "u_net_init_channel" : 16,
+    "u_net_dropout_probability" : 0.2,
+    "u_net_learning_rate" : 1e-3,
+    "default_n_epochs" : 10,
+    "default_batch_size" : 10,
+    "dataset_directory" : "./data/",
+    "image_processing_color_mode" : "unchanged",
+    "is_augment_image" : true, 
+    "image_augmentation_parameters" : {
+        "rotation" : 90,
+        "steps" : 15,
+        "brightness_mask_constant" : 70,
+        "gaussian_smoothing_filter_size" : [3, 3]
+    },
+    "image_processing_image_size" : [572, 572]
+}
