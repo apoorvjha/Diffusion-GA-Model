@@ -12,8 +12,10 @@ class U_NET(Module):
     Description : TBU
     '''
     
-    def __init__(self, init_channel = 16, p=0.2):
+    def __init__(self, config):
         super(U_NET, self).__init__()
+        init_channel = config["u_net_init_channel"]
+        p = config["u_net_dropout_probability"]
         self.conv1 = Conv2d(in_channels = 1, out_channels = init_channel, kernel_size = (3,3), padding='same')
         self.conv1_1 = Conv2d(in_channels = init_channel, out_channels = init_channel, kernel_size = (3,3), padding='same')
         self.pool = MaxPool2d(kernel_size = (2,2))
@@ -94,7 +96,9 @@ class U_NET(Module):
         return output
 
 class Main:
-    def __init__(self, learning_rate = 1e-3):
+    def __init__(self, config):
+        learning_rate = config["u_net_learning_rate"]
+        self.config = config
         if is_available:
             device = 'cuda'
         else:
@@ -103,9 +107,8 @@ class Main:
         self.optimizer = Adam(self.model.parameters(), lr = learning_rate)
     def criterion(self, Y_true, Y_predicted):
         return torch_sum((Y_true - Y_predicted) ** 2)
-    def fit(self, X, Y, epochs = 10, batch_size = 10):
+    def fit(self, X, Y, epochs = self.config["default_n_epochs"], batch_size = self.config["default_batch_size"]):
         n_batch = X.size(0) // batch_size
-        # print(f"Number of batches = {n_batch}")
         for epoch in range(epochs):
             start = time()
             loss_agg = 0
