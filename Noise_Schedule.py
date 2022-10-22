@@ -2,13 +2,18 @@ from numpy.random import normal, poisson, randint
 from numpy import copy, ceil, unique, log2, zeros, clip
 from math import exp, log, cos
 
+
 class Noise:
-    def __init__(self, data, strategy = 'linear', n_steps = 2, noise_type = 'gaussian'):
-        assert strategy in ['linear','exponential','log','cosine-linear','cosine-exponential'], f"{strategy} noise growth startegy not supportd!"
-        assert noise_type in ['gaussian','salt&pepper','poisson','speckle'], f"{noise_type} noise type not supported!"
-        self.noise_type = noise_type
-        self.strategy = strategy
-        self.n_steps = n_steps
+    """
+    Following are supported values for various parameters.
+        strategy :  ['linear','exponential','log','cosine-linear','cosine-exponential']
+        noise_type : ['gaussian','salt&pepper','poisson','speckle']
+    """
+    def __init__(self, data, config):
+        self.noise_type = config["noise_type"]
+        self.strategy = config["strategy"]
+        self.n_steps = config["n_steps"]
+        self.config = config
         self.schedule = []
         self.schedule.append(data)
         self.step_size = len(data)
@@ -24,21 +29,21 @@ class Noise:
         elif self.strategy == 'cosine-exponential':
             return value * exp(cos(i))
         else:
-            raise Exception(f"The support for {self.startegy} growth strategy is not supported!")
+            raise Exception(f"The support for {self.startegy} growth strategy is not implemented!")
     def create_schedule(self):
         for i in range(1, self.n_steps):
             self.schedule.append(list(map(self.induce_noise, self.schedule[i - 1], [i] * self.step_size)))
     def induce_noise(self, x, i):
         h, w, ch = x.shape
         if self.noise_type == 'gaussian':
-            mean = self.adjust(0, i)
-            var = self.adjust(0.1, i)
+            mean = self.adjust(self.config["gaussian_noise_mean"], i)
+            var = self.adjust(self.config["gaussian_noise_variance"], i)
             std = var ** 0.5
             gaussian_additive_noise = normal(mean, std, (h,w,ch))
             return self.clip(x + gaussian_additive_noise)
         elif self.noise_type == 'salt&pepper':
-            p = 0.5
-            noise_density = self.adjust(0.05, i)
+            p = self.config["salt_pepper_noise_salt_probability"]
+            noise_density = self.adjust(self.config["salt_pepper_noise_density"], i)
             noised_image = copy(x)
             n_salt = ceil(noise_density * h * w * ch * p)
             n_pepper = ceil(noise_density * h * w * ch * (1 - p))
